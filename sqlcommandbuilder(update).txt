@@ -1,0 +1,76 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using System.Data;
+using System.Data.SqlClient;
+using System.Configuration;
+
+public partial class Sql_command_builder : System.Web.UI.Page
+{
+    protected void Page_Load(object sender, EventArgs e)
+    {
+
+    }
+
+    protected void Button1_Click(object sender, EventArgs e)
+    {
+        string cs = ConfigurationManager.ConnectionStrings["DBCS"].ConnectionString;
+        SqlConnection con = new SqlConnection(cs);
+
+        string sp = "select * from tblEmployees where EmployeeId=" + TextBox1.Text;
+        SqlDataAdapter da = new SqlDataAdapter(sp, con);
+
+        DataSet ds = new DataSet(); //contains the entire row at a time
+        da.Fill(ds, "Employee"); //feeling the New Employee virtual table from getting data from main table
+
+        ViewState["SQ"] = sp; //contains the query
+        ViewState["dataset"] = ds;   //holds the value of virtual table
+
+        if(ds.Tables["Employee"].Rows.Count>0) //if it brings at least one item then value will be >0
+        {
+            DataRow dr = ds.Tables["Employee"].Rows[0];  //retriving row at index 0
+
+            TextBox2.Text = dr["Name"].ToString();
+            TextBox3.Text = dr["Salary"].ToString();
+            DropDownList1.SelectedValue = dr["Gender"].ToString();
+        }
+        else
+        {
+            Label1.Text = "No fucking match";
+        }
+    }
+
+    protected void Button2_Click(object sender, EventArgs e)
+    {
+        string cs = ConfigurationManager.ConnectionStrings["DBCS"].ConnectionString;
+        SqlConnection con = new SqlConnection(cs);
+        SqlDataAdapter da = new SqlDataAdapter(ViewState["SQ"].ToString(), con);
+        //contains the table associated with the quiey
+
+        //sqlCommandBuilder generates automatically Insert, Update, Delete statement
+        SqlCommandBuilder build = new SqlCommandBuilder(da);
+        DataSet ds =(DataSet)ViewState["dataset"]; //by default returns OBJECT
+
+        if (ds.Tables["Employee"].Rows.Count > 0)
+        {
+            DataRow dr = ds.Tables["Employee"].Rows[0];
+
+            //taking updated value
+            dr["Name"] = TextBox2.Text;
+            dr["Gender"] = DropDownList1.SelectedValue;
+            dr["Salary"] = TextBox3.Text;
+        }
+
+
+       int no_of_rows= da.Update(ds, "Employee"); //updates dataset from Employee table(generated before) to main table; that is just getting updated
+        //returns an integer, the no of rows that has been updated
+
+        if(no_of_rows>0)
+        {
+            Label1.Text = "one row has been updated";
+        }
+    }
+}

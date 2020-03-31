@@ -1,0 +1,74 @@
+------------------------------------------------------------------------------------------------------------>
+SQL DATA ADAPTER
+------------------------------------------------------------------------------------------------------------->
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using System.Data.SqlClient;
+using System.Configuration;
+using System.Data;
+
+public partial class SQL_data_adapter : System.Web.UI.Page
+{
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        string cs = ConfigurationManager.ConnectionStrings["DBCS"].ConnectionString;
+        using (SqlConnection con = new SqlConnection(cs))
+        {
+            SqlDataAdapter cmd = new SqlDataAdapter("emp", con); //an do all DML operations
+            cmd.SelectCommand.CommandType = CommandType.StoredProcedure; //not necessory when parameters are not necessory
+            DataSet ds = new DataSet(); //a dataset is a without connection representation of database
+            //stores table and relations
+            //SQL stores tables at HARD DRIVE, but DATASET stores data at SERVER STORAGE
+            cmd.Fill(ds);
+
+            GridView1.DataSource = ds;
+            GridView1.DataBind();
+
+        }
+    }
+
+    protected void Button1_Click(object sender, EventArgs e)
+    {
+        string cs = ConfigurationManager.ConnectionStrings["DBCS"].ConnectionString;
+        using (SqlConnection con = new SqlConnection(cs))
+        {
+            SqlDataAdapter cmd = new SqlDataAdapter("egg", con); 
+            cmd.SelectCommand.CommandType = CommandType.StoredProcedure;
+	
+            //providing values to input parameter. CHECK "calling a stored procedure using an output parameter" DOCUMENTATION
+            cmd.SelectCommand.Parameters.AddWithValue("@id", TextBox1.Text); //@id comes from databse
+
+            DataSet ds = new DataSet(); 
+            cmd.Fill(ds);
+
+            GridView1.DataSource = ds;
+            GridView1.DataBind();
+
+        }
+    }
+}
+
+
+------------------------------------------------------------------------------------------------------------>
+ EGG sp
+------------------------------------------------------------------------------------------------------------->
+
+create proc egg 
+@id int
+as
+begin
+	 select * from tblEmployees where EmployeeId=@id
+end
+
+------------------------------------------------------------------------------------------------------------>
+emp sp
+------------------------------------------------------------------------------------------------------------->
+create proc emp
+as
+begin
+select * from tblEmployees
+end

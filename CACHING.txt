@@ -1,0 +1,62 @@
+------------------------------------------------------------------------------------------------------------------->
+CACHING DATA
+------------------------------------------------------------------------------------------------------------------->
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using System.Data.SqlClient;
+using System.Configuration;
+using System.Data;
+
+public partial class Caching_a_dataset : System.Web.UI.Page
+{
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        //if you run cache test once and dont clear it. cache will bip even after the 2nd time retun. 
+        //if sql server is disconnected cached memory can still retrive data
+    }
+
+    protected void Button1_Click(object sender, EventArgs e)
+    {
+        if (Cache["data"] == null)
+        {
+            string cs = ConfigurationManager.ConnectionStrings["DBCS"].ConnectionString;
+            using (SqlConnection con = new SqlConnection(cs))
+            {
+                SqlDataAdapter cmd = new SqlDataAdapter("select * from tblEmployees", con);
+                
+                DataSet ds = new DataSet();
+                cmd.Fill(ds);
+
+                Cache["data"] = ds; //Cache has a global access, even from web page 1 to web page 5. it provides a global access on the solution
+
+                GridView1.DataSource = ds;
+                GridView1.DataBind();
+            }
+            Label1.Text = "Load from db";
+        }
+        else
+        {
+            GridView1.DataSource = (DataSet)Cache["data"]; //ds had a data set, so Cache["data"] should return a DATASET. but it returns a string. So we got to type cast it.
+            GridView1.DataBind();
+            Label1.Text = "Load from cache";
+        }
+    }
+
+    protected void Button2_Click(object sender, EventArgs e)
+    {
+        if(Cache["data"]!=null)
+        {
+            Cache.Remove("data");
+            Label1.Text = "data set is removed";
+        }
+        else
+        {
+            Label1.Text = "nothing to removed";
+
+        }
+    }
+}

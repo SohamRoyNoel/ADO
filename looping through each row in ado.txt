@@ -1,0 +1,80 @@
+looping through each row in ado
+----------------------------------------------------------------------------------------------------------------------->
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using System.Data.SqlClient;
+using System.Configuration;
+using System.Data;
+public partial class Sql_datareader : System.Web.UI.Page
+{
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        string cs = ConfigurationManager.ConnectionStrings["DBCS"].ConnectionString;
+        using (SqlConnection con = new SqlConnection(cs))
+        {
+            SqlCommand cmd = new SqlCommand("select * from tblEmployees", con);
+            con.Open();
+            //Sqldatareader object should also be closed as soon as the scope expeirs
+            //to maintain the scalibility and performance of an application.
+            //try() catch() finally() block can also be used in both cases of RDR or CON
+            using (SqlDataReader rdr = cmd.ExecuteReader())
+            {
+                DataTable table = new DataTable(); //creates another table in order to store processed data
+                
+                //generating new cols for table
+                table.Columns.Add("Name");
+                table.Columns.Add("Gender");
+                table.Columns.Add("Salary");
+                table.Columns.Add("da");
+
+                //row by row process
+                while (rdr.Read()) //returns true or false (Boolian) it checks each rows if there is something then it returns true, else false;
+                {
+                    DataRow dr = table.NewRow(); //
+
+                    int original = Convert.ToInt32(rdr["Salary"]);
+                    double da = original * .1; //multiply makes an integer to double
+
+                    dr["Name"] = rdr["Name"];//1st dr["Name"] comes from table::: rdr["Name"] comes from database table
+                    dr["Gender"] = rdr["Gender"];
+                    dr["Salary"] = Convert.ToInt32(rdr["Salary"]);
+                    dr["da"] = da;
+                    table.Rows.Add(dr);
+                }
+
+                GridView1.DataSource = table;
+                GridView1.DataBind();
+            }
+        }
+    }
+}
+----------------------------------------------------------------------
+db table
+----------------------------------------------------------------------
+1	Mike	Male	5000
+2	Pam	Female	3500
+3	John	Male	2350
+4	Sara	Female	5700
+5	Steve	Male	4890
+6	Sana	Female	4500
+7	Micle	Male	6000
+8	Shawn	Male	6080
+
+----------------------------------------------------------------------
+ado virtual table table
+----------------------------------------------------------------------
+
+Name	Gender	Salary	da
+Mike	Male	5000	500
+Pam	Female	3500	350
+John	Male	2350	235
+Sara	Female	5700	570
+Steve	Male	4890	489
+Sana	Female	4500	450
+Micle	Male	6000	600
+Shawn	Male	6080	608
+Dean	Male	5500	550

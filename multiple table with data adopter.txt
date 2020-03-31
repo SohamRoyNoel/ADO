@@ -1,0 +1,65 @@
+
+----------------------------------------------------------------------------------------------------------->
+in case of  data adopter
+------------------------------------------------------------------------------------------------------------>
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using System.Data.SqlClient;
+using System.Configuration;
+using System.Data;
+
+public partial class DATAADAPTER_MULTIPLE_TAB : System.Web.UI.Page
+{
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        string cs = ConfigurationManager.ConnectionStrings["DBCS"].ConnectionString;
+        using (SqlConnection con = new SqlConnection(cs))
+        {
+            SqlDataAdapter cmd = new SqlDataAdapter("PANT", con);
+            cmd.SelectCommand.CommandType = CommandType.StoredProcedure;
+
+            //cmd.SelectCommand.Parameters.AddWithValue("@id", TextBox1.Text); //@id comes from databse
+
+            DataSet ds = new DataSet();
+            cmd.Fill(ds); //opens connection, execute sp, load data=> ds, close connection
+
+            GridView1.DataSource = ds;
+            GridView1.DataBind();
+
+            GridView2.DataSource = ds;
+            GridView2.DataBind();
+        }
+    }
+}
+-------------------------------------------------------------------------------------------------------------->
+DATA ADAPTER ALWAYS gives two gridviews if you dontUSE ANY THING. [HAVING SAME VALUE]
+SQLCOMMAND never gives 2nd gridview. THE COURSOR LEFT CONTROL AS SOON AS THE first query execution is done.
+--------------------------------------------------------------------------------------------------------------->
+
+public partial class DATAADAPTER_MULTIPLE_TAB : System.Web.UI.Page
+{
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        string cs = ConfigurationManager.ConnectionStrings["DBCS"].ConnectionString;
+        using (SqlConnection con = new SqlConnection(cs))
+        {
+            SqlDataAdapter cmd = new SqlDataAdapter("PANT", con);
+            cmd.SelectCommand.CommandType = CommandType.StoredProcedure;
+
+            //cmd.SelectCommand.Parameters.AddWithValue("@id", TextBox1.Text); //@id comes from databse
+
+            DataSet ds = new DataSet();
+            cmd.Fill(ds); //opens connection, execute sp, load data=> ds, close connection
+
+            GridView1.DataSource = ds.Tables[0]; //this are called table collection 0 are the index of 1st atble and 1 means 2nd table
+            GridView1.DataBind();
+
+            GridView2.DataSource = ds.Tables[1];
+            GridView2.DataBind();
+        }
+    }
+}

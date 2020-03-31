@@ -1,0 +1,44 @@
+------------------------------------------------------------------------------------------->
+//looping through result sets
+------------------------------------------------------------------------------------------->
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using System.Data.SqlClient;
+using System.Configuration;
+using System.Data;
+
+public partial class SQLdatareaders_object_s_next_result_method : System.Web.UI.Page
+{
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        string cs = ConfigurationManager.ConnectionStrings["DBCS"].ConnectionString;
+        using (SqlConnection con = new SqlConnection(cs))
+        {
+            //looping through result sets
+            SqlCommand cmd = new SqlCommand("select * from tblEmployees;select * from tblStudents", con);
+            con.Open();
+
+            using (SqlDataReader rdr = cmd.ExecuteReader())
+            {
+                GridView1.DataSource = rdr;
+                GridView1.DataBind();
+                //if you dont use rdr.nextresult the cursor will stop journey while looping through one result set.
+
+                while (rdr.NextResult()) //it also returns true or false.
+                {
+                    GridView2.DataSource = rdr;
+                    GridView2.DataBind();
+                }
+            }
+
+        }
+    }
+}
+
+
+captures both grid view at a time. without using NEXTRESULT cursor will only show the value of  1st query
